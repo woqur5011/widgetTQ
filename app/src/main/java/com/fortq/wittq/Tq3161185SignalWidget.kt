@@ -1,4 +1,4 @@
-﻿package com.fortq.wittq
+package com.fortq.wittq
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.edit
 import androidx.core.graphics.createBitmap
 import androidx.glance.*
 import androidx.glance.action.ActionParameters
@@ -42,7 +43,6 @@ class Tq3161185RefreshCallback : ActionCallback {
     ) {
         try {
             Log.d("WITTQ_DEBUG", "QqqqStrategy refresh clicked")
-            // provideGlance가 직접 fetch하므로 updateAll만 호출
             Tq3161185SignalWidget().updateAll(context)
         } catch (e: Exception) {
             Log.e("WITTQ_DEBUG", "QqqqStrategy refresh failed: ${e.message}", e)
@@ -61,7 +61,6 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
 
     @SuppressLint("RestrictedApi")
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        // AGTQ/Snow와 동일 구조: provideGlance에서 enqueue (PeriodicWork+KEEP → 중복 차단되어 루프 없음)
         Tq3161185SignalWorker.enqueue(context)
 
         val lastUpdate = SimpleDateFormat(
@@ -83,6 +82,28 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
                 )
 
                 val chart = drawStrategyChart(strategy.chartBars, 400, 400, strategy.signalColor)
+                
+                // ✅ SharedPreferences에 전략 결과 저장
+                val prefs = context.getSharedPreferences("Tq3161185Prefs", Context.MODE_PRIVATE)
+                prefs.edit {
+                    putString("last_state", strategy.state)
+                    putString("last_signal", strategy.todaySignal)
+                    putString("last_reason", strategy.todayReason)
+                    putString("last_entry_reason", strategy.entryReason)
+                    putFloat("last_entry_price", strategy.entryPrice?.toFloat() ?: 0f)
+                    putInt("last_days_in_position", strategy.daysInPosition)
+                    putString("last_sell_line", strategy.activeSellLine)
+                    putFloat("last_ma3", strategy.ma3?.toFloat() ?: 0f)
+                    putFloat("last_ma161", strategy.ma161?.toFloat() ?: 0f)
+                    putFloat("last_ma185", strategy.ma185?.toFloat() ?: 0f)
+                    putFloat("last_tqqq_price", strategy.tqqqCurrentPrice.toFloat())
+                    putFloat("last_tqqq_change_pct", strategy.tqqqChangePct?.toFloat() ?: 0f)
+                    putFloat("last_qqq_price", strategy.qqqCurrentPrice.toFloat())
+                    putLong("last_signal_color", strategy.signalColor)
+                    putLong("last_update_time", System.currentTimeMillis())
+                    putBoolean("has_cached_data", true)
+                }
+                
                 Pair(strategy, chart)
             } catch (e: Exception) {
                 Log.e("WITTQ_DEBUG", "QqqqStrategy data failed: ${e.message}", e)
@@ -96,37 +117,83 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
                 val (strategy, chart) = resultPair
                 WidgetContent(strategy, chart, lastUpdate, size)
             } else {
-                Box(
-                    modifier = GlanceModifier
-                        .fillMaxSize()
-                        .background(Color(0xFF1C1C1E))
-                        .cornerRadius(42.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            "QQQ 3/161/185",
-                            style = TextStyle(
-                                color = ColorProvider(Color(0xFF8E8E93)),
-                                fontSize = 12.sp
+                // ✅ 실패 시 캐시된 데이터 표시
+                val prefs = context.getSharedPreferences("Tq3161185Prefs", Context.MODE_PRIVATE)
+                val hasCachedData = prefs.getBoolean("has_cached_data", false)
+
+                if (hasCachedData) {
+                    // 캐시된 데이터로 UI 구성
+                    val cachedState = prefs.getString("last_state", "미보유") ?: "미보유"
+                    val cachedSignal = prefs.getString("last_signal", "관망") ?: "관망"
+                    val cachedReason = prefs.getString("last_reason", "-") ?: "-"
+                    val cachedEntryPrice = prefs.getFloat("last_entry_price", 0f).toDouble()
+                    val cachedDaysInPos = prefs.getInt("last_days_in_position", 0)
+                    val cachedSellLine = prefs.getString("last_sell_line", "-") ?: "-"
+                    val cachedMa3 = prefs.getFloat("last_ma3", 0f).toDouble()
+                    val cachedMa161 = prefs.getFloat("last_ma161", 0f).toDouble()
+                    val cachedMa185 = prefs.getFloat("last_ma185", 0f).toDouble()
+                    val cachedTqqqPrice = prefs.getFloat("last_tqqq_price", 0f).toDouble()
+                    val cachedTqqqChangePct = prefs.getFloat("last_tqqq_change_pct", 0f).toDouble()
+                    val cachedQqqPrice = prefs.getFloat("last_qqq_price", 0f).toDouble()
+                    val cachedSignalColor = prefs.getLong("last_signal_color", 0xFF8E8E93)
+                    val lastUpdateMs = prefs.getLong("last_update_time", 0L)
+
+                    // 캐시된 데이터를 통해 Result 객체 구성
+                    val cachedResult = Tq3161185Result(
+                        state              = cachedState,
+                        activeSellLine     = cachedSellLine,
+                        entryPrice         = if (cachedEntryPrice > 0) cachedEntryPrice else null,
+                        entryReason        = prefs.getString("last_entry_reason", "-") ?: "-",
+                        daysInPosition     = cachedDaysInPos,
+                        todaySignal        = cachedSignal,
+                        todayReason        = cachedReason,
+                        strategyReturnPct  = null,
+                        qqqCurrentPrice    = cachedQqqPrice,
+                        tqqqCurrentPrice   = cachedTqqqPrice,
+                        tqqqChangePct      = if (cachedTqqqChangePct != 0f) cachedTqqqChangePct else null,
+                        ma3                = if (cachedMa3 > 0) cachedMa3 else null,
+                        ma161              = if (cachedMa161 > 0) cachedMa161 else null,
+                        ma185              = if (cachedMa185 > 0) cachedMa185 else null,
+                        envUpper           = null,
+                        signalColor        = cachedSignalColor,
+                        chartBars          = emptyList()
+                    )
+
+                    WidgetContent(cachedResult, null, lastUpdate, size, isCached = true)
+                } else {
+                    // 캐시된 데이터도 없을 때
+                    Box(
+                        modifier = GlanceModifier
+                            .fillMaxSize()
+                            .background(Color(0xFF1C1C1E))
+                            .cornerRadius(42.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                "QQQ 3/161/185",
+                                style = TextStyle(
+                                    color = ColorProvider(Color(0xFF8E8E93)),
+                                    fontSize = 12.sp
+                                )
                             )
-                        )
-                        Spacer(modifier = GlanceModifier.height(4.dp))
-                        Text(
-                            "업데이트 중...",
-                            style = TextStyle(
-                                color = ColorProvider(Color.White),
-                                fontSize = 14.sp
+                            Spacer(modifier = GlanceModifier.height(4.dp))
+                            Text(
+                                "업데이트 중...",
+                                style = TextStyle(
+                                    color = ColorProvider(Color.White),
+                                    fontSize = 14.sp
+                                )
                             )
-                        )
-                        Spacer(modifier = GlanceModifier.height(4.dp))
-                        Text(
-                            lastUpdate,
-                            style = TextStyle(
-                                color = ColorProvider(Color(0xFF8E8E93)),
-                                fontSize = 10.sp
+                            Spacer(modifier = GlanceModifier.height(4.dp))
+                            Text(
+                                lastUpdate,
+                                style = TextStyle(
+                                    color = ColorProvider(Color(0xFF8E8E93)),
+                                    fontSize = 10.sp
+                                )
                             )
-                        )
+                        }
                     }
                 }
             }
@@ -142,7 +209,8 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
         res: Tq3161185Result,
         chart: Bitmap?,
         updateTime: String,
-        size: DpSize
+        size: DpSize,
+        isCached: Boolean = false
     ) {
         val factor    = (size.width.value / 410f).coerceIn(0.6f, 1.0f)
         val hpadding  = (30 * factor).dp
@@ -212,6 +280,17 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
                                     provider = ImageProvider(it),
                                     contentDescription = null,
                                     modifier = GlanceModifier.fillMaxSize()
+                                )
+                            }
+                            // 캐시된 데이터인 경우 표시
+                            if (isCached) {
+                                Text(
+                                    "[캐시]",
+                                    style = TextStyle(
+                                        color = ColorProvider(Color(0xFF8E8E93)),
+                                        fontSize = (8 * factor).sp
+                                    ),
+                                    modifier = GlanceModifier.padding(4.dp)
                                 )
                             }
                         }
@@ -415,7 +494,7 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
         val bitmap = createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
 
-        // 배경: bgColor와 맞게 신호 tint 배경
+        // ��경: bgColor와 맞게 신호 tint 배경
         val bgHex = when (signalColorLong) {
             0xFF30D158L -> "#0D2318"  // 매수 초록 tint
             0xFFFF453AL -> "#2C1012"  // 매도 빨강 tint
