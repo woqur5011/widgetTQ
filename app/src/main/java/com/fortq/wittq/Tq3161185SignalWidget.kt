@@ -82,7 +82,7 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
                     tqqqPrevClose    = tData.prevClose
                 )
 
-                val chart = drawStrategyChart(strategy.chartBars, 400, 200)
+                val chart = drawStrategyChart(strategy.chartBars, 400, 400)
                 Pair(strategy, chart)
             } catch (e: Exception) {
                 Log.e("WITTQ_DEBUG", "QqqqStrategy data failed: ${e.message}", e)
@@ -145,8 +145,8 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
         size: DpSize
     ) {
         val factor    = (size.width.value / 410f).coerceIn(0.6f, 1.0f)
-        val hpadding  = (40 * factor).dp
-        val vpadding  = (16 * factor).dp
+        val hpadding  = (16 * factor).dp
+        val vpadding  = (12 * factor).dp
 
         // 색상 팔레트
         val signalColor = Color(res.signalColor)
@@ -159,10 +159,10 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
         val green       = Color(0xFF10B981) // MA185
 
         // 폰트 크기
-        val tinySize  = (10 * factor).sp
-        val subSize   = (11 * factor).sp
-        val mainSize  = (14 * factor).sp
-        val priceSize = (22 * factor).sp
+        val tinySize  = (9 * factor).sp
+        val subSize   = (10 * factor).sp
+        val mainSize  = (12 * factor).sp
+        val priceSize = (17 * factor).sp
 
         val changePct  = res.tqqqChangePct
         val changeColor = when {
@@ -189,46 +189,25 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
 
-                    // ── 좌측: 차트 + MA 값 ──────────────────────────────────
+                    // ── 좌측: 차트 (최대 확장) ──────────────────────────────
                     Column(
-                        modifier = GlanceModifier.defaultWeight(),
+                        modifier = GlanceModifier.defaultWeight().fillMaxHeight(),
                         verticalAlignment = Alignment.Top
                     ) {
-                        // 헤더
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                "QQQ 3/161/185",
-                                style = TextStyle(
-                                    color = ColorProvider(gray),
-                                    fontSize = tinySize
+                        // 차트 이미지 (가용 공간 최대 확장)
+                        Box(modifier = GlanceModifier.fillMaxWidth().defaultWeight()) {
+                            chart?.let {
+                                Image(
+                                    provider = ImageProvider(it),
+                                    contentDescription = null,
+                                    modifier = GlanceModifier.fillMaxSize()
                                 )
-                            )
-                            Spacer(modifier = GlanceModifier.width(4.dp))
-                            Text(
-                                "($updateTime)",
-                                style = TextStyle(
-                                    color = ColorProvider(gray),
-                                    fontSize = (9 * factor).sp
-                                )
-                            )
+                            }
                         }
 
-                        Spacer(modifier = GlanceModifier.height((5 * factor).dp))
+                        Spacer(modifier = GlanceModifier.height((3 * factor).dp))
 
-                        // 차트 이미지
-                        chart?.let {
-                            Image(
-                                provider = ImageProvider(it),
-                                contentDescription = null,
-                                modifier = GlanceModifier
-                                    .fillMaxWidth()
-                                    .height((120 * factor).dp)
-                            )
-                        }
-
-                        Spacer(modifier = GlanceModifier.height((5 * factor).dp))
-
-                        // MA 값 표시 (색상은 JS settings.colors 동일)
+                        // MA 값 표시 (차트 하단에만)
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
                                 "3: ${res.ma3?.let { "%.0f".format(it) } ?: "-"}",
@@ -260,6 +239,16 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
 
                     // ── 우측: 신호 / 상태 정보 ─────────────────────────────
                     Column(modifier = GlanceModifier.width((130 * factor).dp).fillMaxHeight()) {
+                        Text(
+                            "QQQ 3/161/185",
+                            style = TextStyle(
+                                fontSize = (13 * factor).sp,
+                                fontWeight = FontWeight.Bold,
+                                color = ColorProvider(Color.LightGray)
+                            )
+                        )
+
+                        Spacer(modifier = GlanceModifier.defaultWeight())
 
                         // SIGNAL
                         Text(
@@ -282,7 +271,7 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
                             )
                         )
 
-                        Spacer(modifier = GlanceModifier.height((10 * factor).dp))
+                        Spacer(modifier = GlanceModifier.defaultWeight())
 
                         // STATUS + 매도선
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -317,7 +306,7 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
                             }
                         }
 
-                        Spacer(modifier = GlanceModifier.height((10 * factor).dp))
+                        Spacer(modifier = GlanceModifier.defaultWeight())
 
                         // TQQQ 현재가 + 등락률
                         Text(
@@ -333,7 +322,7 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
                             style = TextStyle(color = ColorProvider(changeColor), fontSize = subSize)
                         )
 
-                        Spacer(modifier = GlanceModifier.height((6 * factor).dp))
+                        Spacer(modifier = GlanceModifier.defaultWeight())
 
                         // 전략 수익률 + 새로고침
                         Row(
@@ -452,11 +441,11 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
         )
 
         val seriesList = listOf(
-            Series("#e5e7eb", 1.6f) { it.close    },  // QQQ 종가 (흰회색)
-            Series("#f59e0b", 1.3f) { it.ma3      },  // MA3  (황색)
-            Series("#3b82f6", 1.1f) { it.ma161    },  // MA161 (청색)
-            Series("#10b981", 1.1f) { it.ma185    },  // MA185 (녹색)
-            Series("#ef4444", 1.1f) { it.envUpper }   // Env+5% (적색)
+            Series("#e5e7eb", 3.5f) { it.close    },  // QQQ 종가 (흰회색)
+            Series("#f59e0b", 2.5f) { it.ma3      },  // MA3  (황색)
+            Series("#3b82f6", 2.0f) { it.ma161    },  // MA161 (청색)
+            Series("#10b981", 2.0f) { it.ma185    },  // MA185 (녹색)
+            Series("#ef4444", 2.0f) { it.envUpper }   // Env+5% (적색)
         )
 
         for (s in seriesList) {

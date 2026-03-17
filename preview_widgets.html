@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>widgetTQ – Widget Preview</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #000; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #fff; padding: 20px; }
+  h1 { text-align: center; color: #8E8E93; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 24px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 960px; margin: 0 auto; }
+  .widget-wrap { display: flex; flex-direction: column; gap: 6px; }
+  .label { color: #48484A; font-size: 11px; text-align: center; letter-spacing: 1px; text-transform: uppercase; }
+
+  .widget {
+    width: 420px; height: 160px;
+    background: #1C1C1E;
+    border-radius: 34px;
+    padding: 16px 24px;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* ── 레이아웃 ── */
+  /* ALT TQ200: 차트 3 : 정보 1 */
+  .chart-col  { flex: 3; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
+  /* 나머지 위젯 좌측 */
+  .left-fill  { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
+  /* 우측 고정폭 */
+  .right-130  { width: 128px; flex-shrink: 0; display: flex; flex-direction: column; overflow: hidden; }
+  /* ALT TQ200 우측 (flex:1) */
+  .right-sm   { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .sep        { width: 12px; flex-shrink: 0; }
+  /* 세로 여백 분배 */
+  .sp         { flex: 1; min-height: 0; }
+  /* canvas 컨테이너: 절대 배치로 flex 공간을 100% 채움 */
+  .chart-box  { flex: 1; min-height: 0; position: relative; }
+  .chart-box > canvas { position: absolute; top:0; left:0; width:100%; height:100%; display:block; }
+
+  /* ── 인라인 유틸 ── */
+  .row      { display: flex; align-items: center; }
+  .row-btw  { display: flex; align-items: center; justify-content: space-between; }
+  .row-base { display: flex; align-items: baseline; gap: 4px; }
+  .col      { display: flex; flex-direction: column; }
+
+  svg { display: block; flex-shrink: 0; }
+</style>
+</head>
+<body>
+<h1>widgetTQ · Widget Preview</h1>
+<div class="grid">
+
+  <!-- ═══════════════════════════════════════════
+       1. ALT TQ200  (StockWidget)
+       좌:우 = 3:1,  차트2개 + 우측 정보 압축
+  ═══════════════════════════════════════════ -->
+  <div class="widget-wrap">
+    <div class="label">ALT TQ200</div>
+    <div class="widget">
+      <!-- 좌측 (flex:3) -->
+      <div class="left-fill">
+        <div style="font-size:9px; color:#8E8E93; flex-shrink:0; line-height:1.4;">TQQQ ( 200MA )</div>
+        <div class="chart-box"><canvas id="tqqq-chart"></canvas></div>
+        <div style="height:3px; flex-shrink:0;"></div>
+        <div style="font-size:9px; color:#8E8E93; flex-shrink:0; line-height:1.4;">QQQ ( 3/161 )</div>
+        <div class="chart-box"><canvas id="qqq-chart"></canvas></div>
+      </div>
+      <div class="sep"></div>
+      <!-- 우측 128px (same as Snow/AGTQ) -->
+      <div class="right-130">
+        <!-- SCORE + market status 한 줄 -->
+        <div class="row" style="gap:4px;">
+          <span style="color:#30D158; font-weight:700; font-size:20px; line-height:1;">3</span>
+          <div class="col">
+            <span style="color:#8E8E93; font-size:8px; line-height:1.2;">SCORE</span>
+            <span style="color:#fff; font-weight:700; font-size:11px; line-height:1.2;">BULL</span>
+          </div>
+        </div>
+        <div class="sp"></div>
+        <!-- ACTION 한 줄 -->
+        <div class="row-base">
+          <span style="color:#8E8E93; font-size:8px;">ACTION</span>
+          <span style="color:#fff; font-weight:700; font-size:10px;">0%→100% ↑</span>
+        </div>
+        <!-- STATUS + 신호 한 줄 -->
+        <div class="row-base" style="margin-top:2px;">
+          <span style="color:#8E8E93; font-size:8px;">STATUS</span>
+          <span style="color:#30D158; font-weight:700; font-size:12px;">HOLD</span>
+        </div>
+        <div style="color:#30D158; font-size:9px; line-height:1.3;">QQQ &gt; 3/161 MA</div>
+        <div class="sp"></div>
+        <!-- 현재가 + 수익률 한 줄 -->
+        <div class="row-base">
+          <span style="color:#fff; font-weight:700; font-size:12px;">$76.23</span>
+          <span style="color:#30D158; font-weight:700; font-size:10px;">+12.4%</span>
+        </div>
+        <div class="sp"></div>
+        <!-- DISP + VOL + 새로고침 한 줄 -->
+        <div class="row-btw">
+          <div class="col" style="gap:1px;">
+            <div class="row-base">
+              <span style="color:#8E8E93; font-size:8px;">DISP</span>
+              <span style="color:#fff; font-weight:700; font-size:10px;">+5.2%</span>
+            </div>
+            <div class="row-base">
+              <span style="color:#8E8E93; font-size:8px;">VOL</span>
+              <span style="color:#fff; font-weight:700; font-size:10px;">1.8</span>
+            </div>
+          </div>
+          <div style="width:22px; height:22px; border-radius:50%; background:rgba(255,255,255,.15); display:flex; align-items:center; justify-content:center;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       2. 200MA AGiTQ  (AGTQWidget)
+  ═══════════════════════════════════════════ -->
+  <div class="widget-wrap">
+    <div class="label">200MA AGiTQ</div>
+    <div class="widget">
+      <!-- 좌측 chart -->
+      <div class="left-fill">
+        <div class="chart-box"><canvas id="agtq-chart"></canvas></div>
+      </div>
+      <div class="sep"></div>
+      <!-- 우측 128px -->
+      <div class="right-130">
+        <span style="color:#D1D1D6; font-weight:700; font-size:12px; line-height:1.3; flex-shrink:0;">📊 200MA AGiTQ</span>
+        <div class="sp"></div>
+        <!-- 신호 + 액션 한 줄 -->
+        <div class="row-base">
+          <span style="color:#30D158; font-weight:700; font-size:15px;">보유</span>
+          <span style="color:#fff; font-weight:700; font-size:11px;">200MA 위</span>
+        </div>
+        <div style="color:#8E8E93; font-size:10px; line-height:1.3;">🛎️ $68.50 / 23d</div>
+        <div class="sp"></div>
+        <!-- 사용자 가격 + 수익 한 줄 -->
+        <span style="color:#0A84FF; font-weight:700; font-size:11px;">$72.00 / +5.1%</span>
+        <div class="sp"></div>
+        <!-- TQ PRICE + MA200 compact rows -->
+        <div class="row-btw" style="gap:2px;">
+          <span style="color:#8E8E93; font-size:10px;">TQ PRICE</span>
+          <span style="color:#fff; font-size:11px;">76.23</span>
+        </div>
+        <div class="row-btw" style="gap:2px;">
+          <span style="color:#8E8E93; font-size:10px;">MA200</span>
+          <span style="color:#fff; font-size:11px;">61.40</span>
+        </div>
+        <!-- 새로고침 -->
+        <div style="flex:1; min-height:0; display:flex; align-items:flex-end; justify-content:flex-end;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8E8E93" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       3. Snowball TQQQ  (SnowWidget)
+  ═══════════════════════════════════════════ -->
+  <div class="widget-wrap">
+    <div class="label">Snowball TQQQ</div>
+    <div class="widget">
+      <!-- 좌측: 차트 + 하단 레이블 -->
+      <div class="left-fill">
+        <div class="chart-box"><canvas id="snow-chart"></canvas></div>
+        <div class="row-btw" style="flex-shrink:0; padding:2px 2px 0;">
+          <span style="color:#fff; font-weight:700; font-size:10px;">Price: 76.23</span>
+          <span style="color:#FFA400; font-weight:700; font-size:10px;">220MA: 58.10</span>
+        </div>
+      </div>
+      <div class="sep"></div>
+      <!-- 우측 128px -->
+      <div class="right-130">
+        <span style="color:#D1D1D6; font-weight:700; font-size:12px; line-height:1.3; flex-shrink:0;">☃️ Snowball TQQQ</span>
+        <div class="sp"></div>
+        <!-- 신호 + 액션 한 줄 -->
+        <div class="row-base">
+          <span style="color:#30D158; font-weight:700; font-size:15px;">보유</span>
+          <span style="color:#fff; font-weight:700; font-size:10px;">매수유지</span>
+        </div>
+        <div style="color:#30D158; font-size:10px; line-height:1.3;">🛎️ $65.20 / +16.9% / 42d</div>
+        <div class="sp"></div>
+        <!-- 사용자 가격 한 줄 -->
+        <span style="color:#D1D1D6; font-weight:700; font-size:11px;">$72.00 / +5.1%</span>
+        <div class="sp"></div>
+        <!-- DISP / 52W / RSI — 2컬럼 compact -->
+        <div class="col" style="gap:2px;">
+          <div class="row-btw">
+            <span style="color:#8E8E93; font-size:9px;">DISP</span>
+            <span style="color:#fff; font-size:10px;">+31.2%</span>
+          </div>
+          <div class="row-btw">
+            <span style="color:#8E8E93; font-size:9px;">52W</span>
+            <span style="color:#fff; font-size:10px;">-8.4%</span>
+          </div>
+          <div class="row-btw">
+            <span style="color:#8E8E93; font-size:9px;">RSI</span>
+            <span style="color:#fff; font-size:10px;">62.5</span>
+          </div>
+        </div>
+        <!-- 새로고침 -->
+        <div style="flex:1; min-height:0; display:flex; align-items:flex-end; justify-content:flex-end;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8E8E93" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       4. QQQ 3/161/185  (Tq3161185SignalWidget)
+  ═══════════════════════════════════════════ -->
+  <div class="widget-wrap">
+    <div class="label">QQQ 3/161/185</div>
+    <div class="widget">
+      <!-- 좌측: 차트 + MA 레이블 -->
+      <div class="left-fill">
+        <div class="chart-box"><canvas id="tq3-chart"></canvas></div>
+        <div style="height:2px; flex-shrink:0;"></div>
+        <div class="row" style="gap:5px; flex-shrink:0;">
+          <span style="color:#F59E0B; font-size:9px;">3: 478</span>
+          <span style="color:#3B82F6; font-size:9px;">161: 452</span>
+          <span style="color:#10B981; font-size:9px;">185: 446</span>
+        </div>
+      </div>
+      <div class="sep"></div>
+      <!-- 우측 128px -->
+      <div class="right-130">
+        <span style="color:#D1D1D6; font-weight:700; font-size:12px; line-height:1.3; flex-shrink:0;">QQQ 3/161/185</span>
+        <div class="sp"></div>
+        <!-- SIGNAL label + value 한 줄 -->
+        <div class="row-base">
+          <span style="color:#8E8E93; font-size:9px;">SIGNAL</span>
+          <span style="color:#30D158; font-weight:700; font-size:15px;">보유</span>
+        </div>
+        <div style="color:#8E8E93; font-size:9px; line-height:1.3;">MA3 &gt; MA161</div>
+        <div class="sp"></div>
+        <!-- STATUS + 매도선 한 줄 -->
+        <div class="row" style="gap:10px;">
+          <div>
+            <div style="color:#8E8E93; font-size:9px;">STATUS</div>
+            <div style="color:#fff; font-weight:700; font-size:10px;">강세</div>
+          </div>
+          <div>
+            <div style="color:#8E8E93; font-size:9px;">매도선</div>
+            <div style="color:#fff; font-weight:700; font-size:10px;">MA161</div>
+          </div>
+        </div>
+        <div class="sp"></div>
+        <!-- TQQQ 현재가 + 등락률 한 줄 -->
+        <div class="row-base">
+          <span style="color:#fff; font-weight:700; font-size:11px;">TQQQ $76.23</span>
+          <span style="color:#30D158; font-size:10px;">+1.82%</span>
+        </div>
+        <div class="sp"></div>
+        <!-- 전략수익 + 새로고침 한 줄 -->
+        <div class="row-btw" style="align-items:flex-end;">
+          <div>
+            <div style="color:#8E8E93; font-size:9px;">전략수익</div>
+            <div style="color:#30D158; font-weight:700; font-size:11px;">+18.40%</div>
+          </div>
+          <div style="width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,.15); display:flex; align-items:center; justify-content:center;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       5. Fear & Greed Index  (업데이트 시간 유일하게 표시)
+  ═══════════════════════════════════════════ -->
+  <div class="widget-wrap" style="grid-column: 1 / -1; justify-self: center;">
+    <div class="label">Fear &amp; Greed Index (업데이트 시간 표시)</div>
+    <div class="widget" style="width:420px;">
+      <!-- 좌측 -->
+      <div class="left-fill">
+        <div class="row-btw" style="flex-shrink:0;">
+          <span style="color:#fff; font-weight:700; font-size:12px;">Fear &amp; Greed Index
+            <span style="color:#8E8E93; font-size:10px; font-weight:400;">(Updated 09:32:15)</span>
+          </span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8E8E93" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        </div>
+        <div class="chart-box" style="margin-top:4px;"><canvas id="fgi-chart"></canvas></div>
+      </div>
+      <div class="sep"></div>
+      <!-- 우측 110px -->
+      <div style="width:110px; flex-shrink:0; display:flex; flex-direction:column; overflow:hidden;">
+        <div style="flex:1; min-height:0; overflow:hidden; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px;">
+          <canvas id="pc-gauge" style="width:72px; height:28px; display:block;"></canvas>
+          <div style="color:#FFA400; font-weight:700; font-size:12px; line-height:1.1;">0.72</div>
+          <div style="color:#8E8E93; font-size:9px; line-height:1.1;">Put/Call</div>
+        </div>
+        <div style="width:80px; align-self:center; height:1px; background:#3A3A3C; flex-shrink:0;"></div>
+        <div style="flex:1; min-height:0; overflow:hidden; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px;">
+          <canvas id="fg-gauge" style="width:72px; height:28px; display:block;"></canvas>
+          <div style="color:#30D158; font-weight:700; font-size:14px; line-height:1.1;">68</div>
+          <div style="color:#30D158; font-size:9px; line-height:1.1;">Greed</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /grid -->
+
+<script>
+/* ── utils ── */
+function genPrices(n, start, vol) {
+  const arr = [start];
+  for (let i = 1; i < n; i++) arr.push(arr[i-1] * (1 + (Math.random()-0.48) * vol));
+  return arr;
+}
+function calcMA(prices, period) {
+  return prices.map((_, i) => {
+    if (i < period - 1) return null;
+    const s = prices.slice(i - period + 1, i + 1);
+    return s.reduce((a,b) => a+b, 0) / s.length;
+  });
+}
+
+/* ── line chart (canvas = absolute inside .chart-box) ── */
+function drawLineChart(id, series) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const dpr  = window.devicePixelRatio || 1;
+  const rect = el.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
+  el.width  = rect.width  * dpr;
+  el.height = rect.height * dpr;
+  const ctx = el.getContext('2d');
+  ctx.scale(dpr, dpr);
+  const W = rect.width, H = rect.height;
+  const allVals = series.flatMap(s => s.data.filter(v => v !== null));
+  const lo = Math.min(...allVals), hi = Math.max(...allVals);
+  const range = (hi - lo) || 1;
+  const getY = v => H - ((v - lo) / range) * H * 0.88 - H * 0.06;
+  const getX = (i, len) => (i / (len - 1)) * W;
+  series.forEach(({ data, color, width: lw=2, alpha=1, fill }) => {
+    const len = data.length;
+    if (fill) {
+      ctx.save();
+      const g = ctx.createLinearGradient(0,0,0,H);
+      g.addColorStop(0, color+'35'); g.addColorStop(1, color+'00');
+      ctx.fillStyle = g; ctx.beginPath();
+      let first=true;
+      data.forEach((v,i) => { if(v==null)return; first?ctx.moveTo(getX(i,len),getY(v)):ctx.lineTo(getX(i,len),getY(v)); first=false; });
+      ctx.lineTo(W,H); ctx.lineTo(0,H); ctx.closePath(); ctx.fill(); ctx.restore();
+    }
+    ctx.save();
+    ctx.strokeStyle=color; ctx.lineWidth=lw; ctx.globalAlpha=alpha;
+    ctx.lineJoin='round'; ctx.lineCap='round'; ctx.beginPath();
+    let first=true;
+    data.forEach((v,i) => { if(v==null)return; first?ctx.moveTo(getX(i,len),getY(v)):ctx.lineTo(getX(i,len),getY(v)); first=false; });
+    ctx.stroke(); ctx.restore();
+  });
+}
+
+/* ── half-gauge ── */
+function drawHalfGauge(id, value, maxVal, color) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const dpr = window.devicePixelRatio || 1;
+  const W = el.offsetWidth, H = el.offsetHeight;
+  if (!W || !H) return;
+  el.width = W*dpr; el.height = H*dpr;
+  const ctx = el.getContext('2d'); ctx.scale(dpr, dpr);
+  const cx=W/2, cy=H*0.88, r=Math.min(W*0.38, H*0.78);
+  ctx.beginPath(); ctx.arc(cx,cy,r,Math.PI,0); ctx.strokeStyle='#3A3A3C'; ctx.lineWidth=6; ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx,cy,r,Math.PI,Math.PI+(value/maxVal)*Math.PI);
+  ctx.strokeStyle=color; ctx.lineWidth=6; ctx.lineCap='round'; ctx.stroke();
+}
+
+/* ── data ── */
+const N=90;
+const tqPrices  = genPrices(N,55,0.025),  tqMA200  = calcMA(tqPrices,  Math.min(50,N));
+const qqPrices  = genPrices(N,430,0.015), qqMA3    = calcMA(qqPrices,  3),
+                                           qqMA161  = calcMA(qqPrices,  Math.min(60,N));
+const agtPrices = genPrices(N,55,0.025),  agtMA200 = calcMA(agtPrices, Math.min(50,N));
+const snowPrices= genPrices(N,55,0.025),  snowMA5  = calcMA(snowPrices,5),
+                                           snowMA220= calcMA(snowPrices,Math.min(60,N));
+const tq3Prices = genPrices(N,430,0.015), tq3MA3   = calcMA(tq3Prices, 3),
+      tq3MA161  = calcMA(tq3Prices,Math.min(60,N)),
+      tq3MA185  = tq3MA161.map(v=>v?v*0.985:null),
+      tq3Env    = tq3MA185.map(v=>v?v*0.975:null);
+const fgiTrend  = genPrices(N,55,0.03).map(v=>Math.max(0,Math.min(100,v)));
+
+/* ── render ── */
+function renderAll() {
+  drawLineChart('tqqq-chart',[{data:tqMA200,  color:'#FFFFFF',width:2,  alpha:0.3 },
+                               {data:tqPrices, color:'#30D158',width:3,  fill:true }]);
+  drawLineChart('qqq-chart', [{data:qqMA161,  color:'#FFFFFF',width:2,  alpha:0.3 },
+                               {data:qqMA3,    color:'#30D158',width:3,  fill:true }]);
+  drawLineChart('agtq-chart',[{data:agtMA200, color:'#FFA400',width:2.5},
+                               {data:agtPrices,color:'#30D158',width:3.5,fill:true}]);
+  drawLineChart('snow-chart',[{data:snowMA220,color:'#FFA400',width:2 },
+                               {data:snowMA5,  color:'#a4d2fe',width:2 },
+                               {data:snowPrices,color:'#30D158',width:3,fill:true }]);
+  drawLineChart('tq3-chart', [{data:tq3Env,  color:'#EF4444',width:1.8},
+                               {data:tq3MA185,color:'#10B981',width:1.8},
+                               {data:tq3MA161,color:'#3B82F6',width:1.8},
+                               {data:tq3MA3,  color:'#F59E0B',width:2.2},
+                               {data:tq3Prices,color:'#FFFFFF',width:3, fill:true}]);
+  drawLineChart('fgi-chart', [{data:fgiTrend, color:'#FF9F0A',width:3, fill:true }]);
+  drawHalfGauge('pc-gauge', 0.72, 2.0, '#FFA400');
+  drawHalfGauge('fg-gauge', 68,   100, '#30D158');
+}
+
+requestAnimationFrame(() => requestAnimationFrame(renderAll));
+window.addEventListener('resize', renderAll);
+</script>
+</body>
+</html>

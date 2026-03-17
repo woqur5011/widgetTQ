@@ -337,14 +337,7 @@ class AGTQWidget : GlanceAppWidget() {
                     }
                     // 새로고침 버튼
                     Row (modifier = GlanceModifier.defaultWeight(), verticalAlignment = Alignment.Bottom) {
-                        Text(
-                            "Updated $refreshTime",
-                            style = TextStyle(
-                                color = ColorProvider(Color(0xFF8E8E93)),
-                                fontSize = (11 * factor).sp
-                            )
-                        )
-                        Spacer(modifier = GlanceModifier.width(8.dp))
+                        Spacer(modifier = GlanceModifier.defaultWeight())
                         Box(
                             modifier = GlanceModifier.fillMaxWidth().padding(top = 4.dp),
                             contentAlignment = Alignment.CenterEnd
