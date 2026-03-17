@@ -145,7 +145,7 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
         size: DpSize
     ) {
         val factor    = (size.width.value / 410f).coerceIn(0.6f, 1.0f)
-        val hpadding  = (16 * factor).dp
+        val hpadding  = (30 * factor).dp
         val vpadding  = (12 * factor).dp
 
         // 색상 팔레트
@@ -162,7 +162,7 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
         val tinySize  = (9 * factor).sp
         val subSize   = (10 * factor).sp
         val mainSize  = (12 * factor).sp
-        val priceSize = (17 * factor).sp
+        val priceSize = (19 * factor).sp
 
         val changePct  = res.tqqqChangePct
         val changeColor = when {
@@ -207,13 +207,16 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
 
                         Spacer(modifier = GlanceModifier.height((3 * factor).dp))
 
-                        // MA 값 표시 (차트 하단에만)
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        // MA 값 표시 — 차트 우하단 정렬
+                        Row(
+                            modifier = GlanceModifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.End
+                        ) {
                             Text(
                                 "3: ${res.ma3?.let { "%.0f".format(it) } ?: "-"}",
                                 style = TextStyle(
                                     color = ColorProvider(amber),
-                                    fontSize = tinySize
+                                    fontSize = subSize
                                 )
                             )
                             Spacer(modifier = GlanceModifier.width(5.dp))
@@ -221,7 +224,7 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
                                 "161: ${res.ma161?.let { "%.0f".format(it) } ?: "-"}",
                                 style = TextStyle(
                                     color = ColorProvider(blue),
-                                    fontSize = tinySize
+                                    fontSize = subSize
                                 )
                             )
                             Spacer(modifier = GlanceModifier.width(5.dp))
@@ -229,7 +232,7 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
                                 "185: ${res.ma185?.let { "%.0f".format(it) } ?: "-"}",
                                 style = TextStyle(
                                     color = ColorProvider(green),
-                                    fontSize = tinySize
+                                    fontSize = subSize
                                 )
                             )
                         }
@@ -400,8 +403,8 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
         val bitmap = createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
 
-        // 배경 (JS SETTINGS.colors.panel)
-        canvas.drawColor(android.graphics.Color.parseColor("#0b1220"))
+        // 배경 투명 (위젯의 #1C1C1E 배경을 그대로 사용)
+        canvas.drawColor(android.graphics.Color.TRANSPARENT)
 
         val pad    = 6f
         val chartW = width  - pad * 2
