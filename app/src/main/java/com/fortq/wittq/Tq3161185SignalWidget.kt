@@ -60,7 +60,9 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
 
     @SuppressLint("RestrictedApi")
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        Tq3161185SignalWorker.enqueue(context)
+        try { Tq3161185SignalWorker.enqueue(context) } catch (e: Exception) {
+            Log.e("WITTQ_DEBUG", "Worker enqueue failed: ${e.message}", e)
+        }
 
         val lastUpdate = SimpleDateFormat(
             "HH:mm:ss", java.util.Locale.getDefault()
@@ -95,18 +97,33 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
                 WidgetContent(strategy, chart, lastUpdate, size)
             } else {
                 Box(
-                    modifier = GlanceModifier.fillMaxSize(),
+                    modifier = GlanceModifier
+                        .fillMaxSize()
+                        .background(Color(0xFF1C1C1E))
+                        .cornerRadius(42.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            "Updating...",
-                            style = TextStyle(color = ColorProvider(Color.White))
+                            "QQQ 3/161/185",
+                            style = TextStyle(
+                                color = ColorProvider(Color(0xFF8E8E93)),
+                                fontSize = 12.sp
+                            )
                         )
+                        Spacer(modifier = GlanceModifier.height(4.dp))
+                        Text(
+                            "업데이트 중...",
+                            style = TextStyle(
+                                color = ColorProvider(Color.White),
+                                fontSize = 14.sp
+                            )
+                        )
+                        Spacer(modifier = GlanceModifier.height(4.dp))
                         Text(
                             lastUpdate,
                             style = TextStyle(
-                                color = ColorProvider(Color.White.copy(alpha = 0.6f)),
+                                color = ColorProvider(Color(0xFF8E8E93)),
                                 fontSize = 10.sp
                             )
                         )

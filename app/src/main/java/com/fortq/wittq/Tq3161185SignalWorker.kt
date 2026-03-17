@@ -29,6 +29,12 @@ class Tq3161185SignalWorker(
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build()
 
+            // 즉시 1회 실행 (최초 배치 시 바로 데이터 로드)
+            val oneTimeRequest = OneTimeWorkRequestBuilder<Tq3161185SignalWorker>()
+                .setConstraints(constraints)
+                .build()
+            WorkManager.getInstance(context).enqueue(oneTimeRequest)
+
             val request = PeriodicWorkRequestBuilder<Tq3161185SignalWorker>(
                 60, TimeUnit.MINUTES
             )
