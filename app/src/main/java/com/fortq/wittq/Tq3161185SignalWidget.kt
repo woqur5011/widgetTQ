@@ -42,6 +42,7 @@ class Tq3161185RefreshCallback : ActionCallback {
     ) {
         try {
             Log.d("WITTQ_DEBUG", "QqqqStrategy refresh clicked")
+            // provideGlance가 직접 fetch하므로 updateAll만 호출
             Tq3161185SignalWidget().updateAll(context)
         } catch (e: Exception) {
             Log.e("WITTQ_DEBUG", "QqqqStrategy refresh failed: ${e.message}", e)
@@ -81,7 +82,7 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
                     tqqqPrevClose    = tData.prevClose
                 )
 
-                val chart = drawStrategyChart(strategy.chartBars, 400, 400)
+                val chart = drawStrategyChart(strategy.chartBars, 400, 400, strategy.signalColor)
                 Pair(strategy, chart)
             } catch (e: Exception) {
                 Log.e("WITTQ_DEBUG", "QqqqStrategy data failed: ${e.message}", e)
@@ -147,15 +148,26 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
         val hpadding  = (30 * factor).dp
         val vpadding  = (12 * factor).dp
 
-        // 색상 팔레트
+        // 색상 팔레트 — todaySignal 기반 직관적 색상
+        // 매수=초록, 매도=빨강, 보유=파랑, 관망=회색
         val signalColor = Color(res.signalColor)
-        val upColor     = Color(0xFF30D158)
-        val downColor   = Color(0xFFFF453A)
+        val upColor     = Color(0xFF30D158)   // 매수/수익
+        val downColor   = Color(0xFFFF453A)   // 매도/손실
+        val holdColor   = Color(0xFF0A84FF)   // 보유
+        val watchColor  = Color(0xFF8E8E93)   // 관망
         val gray        = Color(0xFF8E8E93)
         val white       = Color.White
-        val amber       = Color(0xFFF59E0B) // MA3
-        val blue        = Color(0xFF3B82F6) // MA161
-        val green       = Color(0xFF10B981) // MA185
+        val amber       = Color(0xFFF59E0B)   // MA3
+        val blue        = Color(0xFF3B82F6)   // MA161
+        val green       = Color(0xFF10B981)   // MA185
+
+        // 배경 미묘한 tint (신호 색상 반영)
+        val bgColor = when (res.todaySignal) {
+            "매수" -> Color(0xFF0D2318)  // 초록 tint
+            "매도" -> Color(0xFF2C1012)  // 빨강 tint
+            "보유" -> Color(0xFF0D1A2E)  // 파랑 tint
+            else   -> Color(0xFF1C1C1E)  // 기본
+        }
 
         // 폰트 크기
         val tinySize  = (9 * factor).sp
@@ -176,7 +188,7 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
         Box(
             modifier = GlanceModifier
                 .fillMaxSize()
-                .background(Color(0xFF1C1C1E))
+                .background(bgColor)
                 .cornerRadius(42.dp)
                 .padding(horizontal = hpadding, vertical = vpadding)
         ) {
@@ -241,12 +253,13 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
 
                     // ── 우측: 신호 / 상태 정보 ─────────────────────────────
                     Column(modifier = GlanceModifier.width((130 * factor).dp).fillMaxHeight()) {
+                        // 타이틀 — 신호 색상으로
                         Text(
                             "QQQ 3/161/185",
                             style = TextStyle(
                                 fontSize = (13 * factor).sp,
                                 fontWeight = FontWeight.Bold,
-                                color = ColorProvider(Color.LightGray)
+                                color = ColorProvider(signalColor)
                             )
                         )
 
@@ -398,12 +411,26 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
     // 라인: QQQ 종가(흰색), MA3(황색), MA161(청색), MA185(녹색), Env(적색)
     // JS settings.colors 색상 그대로 유지
     // ─────────────────────────────────────────────────────────
-    private fun drawStrategyChart(bars: List<Tq3161185ChartBar>, width: Int, height: Int): Bitmap {
+    private fun drawStrategyChart(bars: List<Tq3161185ChartBar>, width: Int, height: Int, signalColorLong: Long = 0xFFE5E7EBL): Bitmap {
         val bitmap = createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
 
-        // 배경: 위젯 배경색과 동일하게 채워 남색이 보이지 않도록
-        canvas.drawColor(android.graphics.Color.parseColor("#1C1C1E"))
+        // 배경: bgColor와 맞게 신호 tint 배경
+        val bgHex = when (signalColorLong) {
+            0xFF30D158L -> "#0D2318"  // 매수 초록 tint
+            0xFFFF453AL -> "#2C1012"  // 매도 빨강 tint
+            0xFF0A84FFL -> "#0D1A2E"  // 보유 파랑 tint
+            else        -> "#1C1C1E"  // 관망 기본
+        }
+        canvas.drawColor(android.graphics.Color.parseColor(bgHex))
+
+        // 종가선 색: signalColor 기반
+        val closePriceHex = when (signalColorLong) {
+            0xFF30D158L -> "#30D158"  // 매수 초록
+            0xFFFF453AL -> "#FF453A"  // 매도 빨강
+            0xFF0A84FFL -> "#0A84FF"  // 보유 파랑
+            else        -> "#8E8E93"  // 관망 회색
+        }
 
         val pad    = 6f
         val chartW = width  - pad * 2
@@ -443,7 +470,7 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
         )
 
         val seriesList = listOf(
-            Series("#e5e7eb", 3.5f) { it.close    },  // QQQ 종가 (흰회색)
+            Series(closePriceHex, 3.5f) { it.close    },  // QQQ 종가 (신호 색상)
             Series("#f59e0b", 2.5f) { it.ma3      },  // MA3  (황색)
             Series("#3b82f6", 2.0f) { it.ma161    },  // MA161 (청색)
             Series("#10b981", 2.0f) { it.ma185    },  // MA185 (녹색)
