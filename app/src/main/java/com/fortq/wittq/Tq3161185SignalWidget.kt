@@ -60,9 +60,8 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
 
     @SuppressLint("RestrictedApi")
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        try { Tq3161185SignalWorker.enqueue(context) } catch (e: Exception) {
-            Log.e("WITTQ_DEBUG", "Worker enqueue failed: ${e.message}", e)
-        }
+        // Worker 언큐는 Receiver의 onEnabled에서만 호출하고
+        // 여기서 호출 시 doWork()->updateAll()->provideGlance 무한 루프 발생
 
         val lastUpdate = SimpleDateFormat(
             "HH:mm:ss", java.util.Locale.getDefault()
