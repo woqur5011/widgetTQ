@@ -403,8 +403,8 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
         val bitmap = createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
 
-        // 배경 투명 (위젯의 #1C1C1E 배경을 그대로 사용)
-        canvas.drawColor(android.graphics.Color.TRANSPARENT)
+        // 배경: 위젯 배경색과 동일하게 채워 남색이 보이지 않도록
+        canvas.drawColor(android.graphics.Color.parseColor("#1C1C1E"))
 
         val pad    = 6f
         val chartW = width  - pad * 2
