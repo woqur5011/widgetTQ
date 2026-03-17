@@ -57,7 +57,7 @@
                 android:resource="@xml/fgi_widget_info" />
         </receiver>
         <receiver
-            android:name=".Tq3161185SignalReceiver"
+            android:name=".Tq3161185SignalWidgetReceiver"
             android:exported="true"
             android:label="TQ 3-161-185 Signal">
             <intent-filter>
