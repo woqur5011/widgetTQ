@@ -82,7 +82,7 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
                     tqqqPrevClose    = tData.prevClose
                 )
 
-                val chart = drawStrategyChart(strategy.chartBars, 400, 120)
+                val chart = drawStrategyChart(strategy.chartBars, 400, 200)
                 Pair(strategy, chart)
             } catch (e: Exception) {
                 Log.e("WITTQ_DEBUG", "QqqqStrategy data failed: ${e.message}", e)
@@ -222,7 +222,7 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
                                 contentDescription = null,
                                 modifier = GlanceModifier
                                     .fillMaxWidth()
-                                    .height((84 * factor).dp)
+                                    .height((120 * factor).dp)
                             )
                         }
 
