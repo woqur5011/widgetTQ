@@ -256,10 +256,10 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
                         }
                     }
 
-                    Spacer(modifier = GlanceModifier.width((16 * factor).dp))
+                    Spacer(modifier = GlanceModifier.width((15 * factor).dp))
 
                     // ── 우측: 신호 / 상태 정보 ─────────────────────────────
-                    Column(modifier = GlanceModifier.defaultWeight()) {
+                    Column(modifier = GlanceModifier.width((130 * factor).dp).fillMaxHeight()) {
 
                         // SIGNAL
                         Text(

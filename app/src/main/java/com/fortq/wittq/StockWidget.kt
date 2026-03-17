@@ -171,7 +171,7 @@ class StockWidget : GlanceAppWidget() {
         widgetWidth: Int
     ): Bitmap {
         val width = 400
-        val height = 120
+        val height = 200
         val bitmap = createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         val pricePaint = Paint().apply {
@@ -317,7 +317,7 @@ class StockWidget : GlanceAppWidget() {
                             Image(
                                 provider = ImageProvider(it),
                                 contentDescription = null,
-                                modifier = GlanceModifier.fillMaxWidth().height((42 * factor).dp)
+                                modifier = GlanceModifier.fillMaxWidth().height((70 * factor).dp)
                             )
                         }
                         Spacer(modifier = GlanceModifier.height(8.dp))
@@ -333,7 +333,7 @@ class StockWidget : GlanceAppWidget() {
                             Image(
                                 provider = ImageProvider(it),
                                 contentDescription = null,
-                                modifier = GlanceModifier.fillMaxWidth().height((42 * factor).dp)
+                                modifier = GlanceModifier.fillMaxWidth().height((70 * factor).dp)
                             )
                         }
                     }
