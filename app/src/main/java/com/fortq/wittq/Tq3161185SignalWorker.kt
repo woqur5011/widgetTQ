@@ -3,7 +3,13 @@
 import android.content.Context
 import android.util.Log
 import androidx.glance.appwidget.updateAll
-import androidx.work.*
+import androidx.work.Constraints
+import androidx.work.CoroutineWorker
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.WorkerParameters
 import java.util.concurrent.TimeUnit
 
 class Tq3161185SignalWorker(
@@ -29,16 +35,8 @@ class Tq3161185SignalWorker(
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build()
 
-            // 즉시 1회 실행 (최초 배치 시 바로 데이터 로드) — unique로 중복 방지
-            val oneTimeRequest = OneTimeWorkRequestBuilder<Tq3161185SignalWorker>()
-                .setConstraints(constraints)
-                .build()
-            WorkManager.getInstance(context).enqueueUniqueWork(
-                "${WORK_NAME}_once",
-                ExistingWorkPolicy.KEEP,
-                oneTimeRequest
-            )
-
+            // PeriodicWork만 사용 (AGTQ/Snow와 동일 구조)
+            // KEEP 정책으로 중복 등록 차단 → 무한루프 없음
             val request = PeriodicWorkRequestBuilder<Tq3161185SignalWorker>(
                 60, TimeUnit.MINUTES
             )
