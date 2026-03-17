@@ -10,7 +10,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.fortq.wittq"
+        applicationId = "com.fortq.widgettq"
         minSdk = 28
         targetSdk = 36
         versionCode = 1
