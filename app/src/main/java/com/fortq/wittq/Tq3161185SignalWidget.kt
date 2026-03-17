@@ -136,13 +136,12 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
                     val cachedTqqqChangePct = prefs.getFloat("last_tqqq_change_pct", 0f).toDouble()
                     val cachedQqqPrice = prefs.getFloat("last_qqq_price", 0f).toDouble()
                     val cachedSignalColor = prefs.getLong("last_signal_color", 0xFF8E8E93)
-                    val lastUpdateMs = prefs.getLong("last_update_time", 0L)
-
+                
                     // 캐시된 데이터를 통해 Result 객체 구성
                     val cachedResult = Tq3161185Result(
                         state              = cachedState,
                         activeSellLine     = cachedSellLine,
-                        entryPrice         = if (cachedEntryPrice > 0) cachedEntryPrice else null,
+                        entryPrice         = if (cachedEntryPrice > 0.0) cachedEntryPrice else null,
                         entryReason        = prefs.getString("last_entry_reason", "-") ?: "-",
                         daysInPosition     = cachedDaysInPos,
                         todaySignal        = cachedSignal,
@@ -150,15 +149,15 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
                         strategyReturnPct  = null,
                         qqqCurrentPrice    = cachedQqqPrice,
                         tqqqCurrentPrice   = cachedTqqqPrice,
-                        tqqqChangePct      = if (cachedTqqqChangePct != 0f) cachedTqqqChangePct else null,
-                        ma3                = if (cachedMa3 > 0) cachedMa3 else null,
-                        ma161              = if (cachedMa161 > 0) cachedMa161 else null,
-                        ma185              = if (cachedMa185 > 0) cachedMa185 else null,
+                        tqqqChangePct      = if (cachedTqqqChangePct != 0.0) cachedTqqqChangePct else null,
+                        ma3                = if (cachedMa3 > 0.0) cachedMa3 else null,
+                        ma161              = if (cachedMa161 > 0.0) cachedMa161 else null,
+                        ma185              = if (cachedMa185 > 0.0) cachedMa185 else null,
                         envUpper           = null,
                         signalColor        = cachedSignalColor,
                         chartBars          = emptyList()
                     )
-
+                
                     WidgetContent(cachedResult, null, lastUpdate, size, isCached = true)
                 } else {
                     // 캐시된 데이터도 없을 때
