@@ -310,7 +310,7 @@ class StockWidget : GlanceAppWidget() {
 
                     // --- [우측 섹션] ---
                     Column(
-                        modifier = GlanceModifier.defaultWeight().fillMaxHeight()
+                        modifier = GlanceModifier.width((130 * factor).dp).fillMaxHeight()
                     ) {
                         // SCORE
                         Row(verticalAlignment = Alignment.CenterVertically) {
