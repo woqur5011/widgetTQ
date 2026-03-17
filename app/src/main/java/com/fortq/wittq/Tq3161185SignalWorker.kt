@@ -1,4 +1,4 @@
-package com.fortq.wittq
+﻿package com.fortq.wittq
 
 import android.content.Context
 import android.util.Log
@@ -6,14 +6,14 @@ import androidx.glance.appwidget.updateAll
 import androidx.work.*
 import java.util.concurrent.TimeUnit
 
-class QqqqStrategyUpdateWorker(
+class Tq3161185SignalWorker(
     private val context: Context,
     workerParams: WorkerParameters
 ) : CoroutineWorker(context, workerParams) {
 
     override suspend fun doWork(): Result {
         return try {
-            QqqqStrategyWidget().updateAll(context)
+            Tq3161185SignalWidget().updateAll(context)
             Result.success()
         } catch (e: Exception) {
             Log.e("WITTQ_WORKER", "QqqqStrategy update failed: ${e.message}", e)
@@ -22,14 +22,14 @@ class QqqqStrategyUpdateWorker(
     }
 
     companion object {
-        private const val WORK_NAME = "qqq_strategy_update_work"
+        private const val WORK_NAME = "tq_3161185_signal_update_work"
 
         fun enqueue(context: Context) {
             val constraints = Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build()
 
-            val request = PeriodicWorkRequestBuilder<QqqqStrategyUpdateWorker>(
+            val request = PeriodicWorkRequestBuilder<Tq3161185SignalWorker>(
                 60, TimeUnit.MINUTES
             )
                 .setConstraints(constraints)

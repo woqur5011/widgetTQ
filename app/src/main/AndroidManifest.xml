@@ -57,9 +57,9 @@
                 android:resource="@xml/fgi_widget_info" />
         </receiver>
         <receiver
-            android:name=".QqqqStrategyWidgetReceiver"
+            android:name=".Tq3161185SignalReceiver"
             android:exported="true"
-            android:label="QQQ 3/161/185">
+            android:label="TQ 3-161-185 Signal">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>

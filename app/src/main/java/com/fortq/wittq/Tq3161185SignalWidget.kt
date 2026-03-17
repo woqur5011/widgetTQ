@@ -1,4 +1,4 @@
-package com.fortq.wittq
+﻿package com.fortq.wittq
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -34,7 +34,7 @@ import java.util.Date
 // ─────────────────────────────────────────────────────────────
 // 새로고침 버튼 콜백
 // ─────────────────────────────────────────────────────────────
-class QqqqStrategyRefreshCallback : ActionCallback {
+class Tq3161185RefreshCallback : ActionCallback {
     override suspend fun onAction(
         context: Context,
         glanceId: GlanceId,
@@ -42,7 +42,7 @@ class QqqqStrategyRefreshCallback : ActionCallback {
     ) {
         try {
             Log.d("WITTQ_DEBUG", "QqqqStrategy refresh clicked")
-            QqqqStrategyWidget().updateAll(context)
+            Tq3161185SignalWidget().updateAll(context)
         } catch (e: Exception) {
             Log.e("WITTQ_DEBUG", "QqqqStrategy refresh failed: ${e.message}", e)
         }
@@ -52,7 +52,7 @@ class QqqqStrategyRefreshCallback : ActionCallback {
 // ─────────────────────────────────────────────────────────────
 // QQQ 3/161/185 전략 위젯
 // ─────────────────────────────────────────────────────────────
-class QqqqStrategyWidget : GlanceAppWidget() {
+class Tq3161185SignalWidget : GlanceAppWidget() {
 
     override val sizeMode = SizeMode.Responsive(
         setOf(DpSize(300.dp, 100.dp), DpSize(412.dp, 150.dp))
@@ -60,7 +60,7 @@ class QqqqStrategyWidget : GlanceAppWidget() {
 
     @SuppressLint("RestrictedApi")
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        QqqqStrategyUpdateWorker.enqueue(context)
+        Tq3161185SignalWorker.enqueue(context)
 
         val lastUpdate = SimpleDateFormat(
             "HH:mm:ss", java.util.Locale.getDefault()
@@ -73,7 +73,7 @@ class QqqqStrategyWidget : GlanceAppWidget() {
                 val tData = StockApiEngine.fetchMarketData("TQQQ")
                     ?: return@withContext null
 
-                val strategy = QqqqStrategyAlgorithm.calculate(
+                val strategy = Tq3161185Algorithm.calculate(
                     qPrices          = qData.history,
                     tPrices          = tData.history,
                     tqqqCurrentPrice = tData.currentPrice,
@@ -122,7 +122,7 @@ class QqqqStrategyWidget : GlanceAppWidget() {
     @SuppressLint("DefaultLocale", "RestrictedApi")
     @Composable
     private fun WidgetContent(
-        res: QqqqStrategyResult,
+        res: Tq3161185Result,
         chart: Bitmap?,
         updateTime: String,
         size: DpSize
@@ -369,7 +369,7 @@ class QqqqStrategyWidget : GlanceAppWidget() {
                                     .size((30 * factor).dp)
                                     .background(Color.White.copy(alpha = 0.15f))
                                     .cornerRadius((15 * factor).dp)
-                                    .clickable(actionRunCallback<QqqqStrategyRefreshCallback>()),
+                                    .clickable(actionRunCallback<Tq3161185RefreshCallback>()),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Image(
@@ -390,7 +390,7 @@ class QqqqStrategyWidget : GlanceAppWidget() {
     // 라인: QQQ 종가(흰색), MA3(황색), MA161(청색), MA185(녹색), Env(적색)
     // JS settings.colors 색상 그대로 유지
     // ─────────────────────────────────────────────────────────
-    private fun drawStrategyChart(bars: List<QqqqChartBar>, width: Int, height: Int): Bitmap {
+    private fun drawStrategyChart(bars: List<Tq3161185ChartBar>, width: Int, height: Int): Bitmap {
         val bitmap = createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
 
@@ -431,7 +431,7 @@ class QqqqStrategyWidget : GlanceAppWidget() {
         data class Series(
             val hexColor: String,
             val strokeWidth: Float,
-            val getValue: (QqqqChartBar) -> Double?
+            val getValue: (Tq3161185ChartBar) -> Double?
         )
 
         val seriesList = listOf(

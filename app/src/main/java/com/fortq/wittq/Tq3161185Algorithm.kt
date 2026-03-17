@@ -1,4 +1,4 @@
-package com.fortq.wittq
+﻿package com.fortq.wittq
 
 // ============================================================
 // QQQ 3/161/185 전략 알고리즘 (Kotlin)
@@ -13,7 +13,7 @@ package com.fortq.wittq
 //      예외  : exceptionState (하향돌파 당일 제외)
 // ============================================================
 
-data class QqqqChartBar(
+data class Tq3161185ChartBar(
     val close: Double,
     val ma3: Double?,
     val ma161: Double?,
@@ -21,7 +21,7 @@ data class QqqqChartBar(
     val envUpper: Double?
 )
 
-data class QqqqStrategyResult(
+data class Tq3161185Result(
     val state: String,           // 미보유 / 보유(기본) / 보유(예외)
     val activeSellLine: String,  // - / 161일선 / 185일선
     val entryPrice: Double?,     // 전략 진입 시 TQQQ 가격
@@ -38,12 +38,12 @@ data class QqqqStrategyResult(
     val ma185: Double?,
     val envUpper: Double?,
     val signalColor: Long,
-    val chartBars: List<QqqqChartBar>
+    val chartBars: List<Tq3161185ChartBar>
 ) {
     val isHolding: Boolean get() = state.startsWith("보유")
 }
 
-object QqqqStrategyAlgorithm {
+object Tq3161185Algorithm {
 
     private const val SHORT_MA     = 3
     private const val SELL_MA      = 161
@@ -71,7 +71,7 @@ object QqqqStrategyAlgorithm {
         tPrices: List<Double>,          // TQQQ 일별 종가
         tqqqCurrentPrice: Double,       // TQQQ 실시간 현재가
         tqqqPrevClose: Double?          // TQQQ 전일 종가 (등락률 계산용)
-    ): QqqqStrategyResult {
+    ): Tq3161185Result {
 
         // 양쪽 길이 맞추기 (Yahoo API 응답 편차 대응)
         val size = minOf(qPrices.size, tPrices.size)
@@ -218,10 +218,10 @@ object QqqqStrategyAlgorithm {
 
         // ── 차트용 데이터 (최근 90 bar) ─────────────────────────────────────
         val chartBars = bars.takeLast(CHART_DAYS).map { bar ->
-            QqqqChartBar(bar.close, bar.ma3, bar.ma161, bar.ma185, bar.envUpper)
+            Tq3161185ChartBar(bar.close, bar.ma3, bar.ma161, bar.ma185, bar.envUpper)
         }
 
-        return QqqqStrategyResult(
+        return Tq3161185Result(
             state              = state,
             activeSellLine     = activeSellLine,
             entryPrice         = entryPrice,
@@ -245,7 +245,7 @@ object QqqqStrategyAlgorithm {
     private fun insufficientDataResult(
         tqqqCurrentPrice: Double,
         tqqqPrevClose: Double?
-    ) = QqqqStrategyResult(
+    ) = Tq3161185Result(
         state              = "데이터 부족",
         activeSellLine     = "-",
         entryPrice         = null,
