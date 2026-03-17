@@ -132,6 +132,20 @@ class StockWidget : GlanceAppWidget() {
                 val tChart = drawSimpleChart(tHis.takeLast(chartDays), tMa200, if (result.isTqqqBullish) Color(0xFF30D158) else Color(0xFFFF453A), 400)
                 val qChart = drawSimpleChart(qMa3, qMa161, if (result.isQqqBullish) Color(0xFF30D158) else Color(0xFFFF453A), 400)
 
+                // 캐시 저장
+                prefs.edit {
+                    putString("stock_action_title", result.actionTitle)
+                    putString("stock_action_desc", result.actionDesc)
+                    putLong("stock_action_color", result.actionColor)
+                    putFloat("stock_current_price", result.currentPrice.toFloat())
+                    putInt("stock_target_ratio", result.targetRatio)
+                    putBoolean("stock_is_tqqq_bull", result.isTqqqBullish)
+                    putBoolean("stock_is_qqq_bull", result.isQqqBullish)
+                    putBoolean("stock_has_cache", true)
+                }
+                WidgetBitmapCache.save(context, "stock_tchart", tChart)
+                WidgetBitmapCache.save(context, "stock_qchart", qChart)
+
                 Triple(result, tChart, qChart)
             } catch (e: Exception) {
                 Log.e("WITTQ_DEBUG", "Data fetch failed: ${e.message}")
@@ -151,12 +165,38 @@ class StockWidget : GlanceAppWidget() {
                 val (result, tChart, qChart) = resultdata
                 WidgetContent(result, tChart, qChart, lastUpdate, size, signalDesc)
             } else {
-                Box(modifier = GlanceModifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Updating...", style = TextStyle(color = ColorProvider(Color.White)))
-                        Text(lastUpdate, style = TextStyle(color = ColorProvider(Color.White.copy(alpha = 0.6f)),
-                            fontSize = 10.sp)
-                        )
+                // API 실패 → 역사 캐시에서 복원
+                val hasCache = prefs.getBoolean("stock_has_cache", false)
+                if (hasCache) {
+                    val cachedResult = AlgoResult(
+                        score = 0,
+                        marketStatus = "-",
+                        actionTitle = prefs.getString("stock_action_title", "-") ?: "-",
+                        actionDesc = prefs.getString("stock_action_desc", "-") ?: "-",
+                        actionColor = prefs.getLong("stock_action_color", 0xFF8E8E93),
+                        disparity = 0.0,
+                        vol20 = 0.0,
+                        targetRatio = prefs.getInt("stock_target_ratio", 0),
+                        rsi = 0.0,
+                        displayPosition = prefs.getString("user_position", "TQQQ") ?: "TQQQ",
+                        userPosition = prefs.getString("user_position", "TQQQ") ?: "TQQQ",
+                        currentPrice = prefs.getFloat("stock_current_price", 0f).toDouble(),
+                        profitRate = 0.0,
+                        isTqqqBullish = prefs.getBoolean("stock_is_tqqq_bull", false),
+                        isQqqBullish = prefs.getBoolean("stock_is_qqq_bull", false)
+                    )
+                    WidgetContent(
+                        cachedResult,
+                        WidgetBitmapCache.load(context, "stock_tchart"),
+                        WidgetBitmapCache.load(context, "stock_qchart"),
+                        lastUpdate, size, signalDesc
+                    )
+                } else {
+                    Box(modifier = GlanceModifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("Updating...", style = TextStyle(color = ColorProvider(Color.White)))
+                            Text(lastUpdate, style = TextStyle(color = ColorProvider(Color.White.copy(alpha = 0.6f)), fontSize = 10.sp))
+                        }
                     }
                 }
             }

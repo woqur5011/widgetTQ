@@ -66,10 +66,22 @@ class FGIWidget : GlanceAppWidget() {
                 Log.d("WITTQ_DEBUG", "Widget updated at: $lastUpdate")
 
                 if (result != null) {
-                    // 타입 불일치 해결: 90일 히스토리(List), 현재가(Double), 색상 등을 정확히 전달
                     val fgChart = drawFearGreedChart(result.fgHistory)
                     val fgGauge = drawFearGreedGauge(result.fgData.score, 200)
                     val pcGauge = drawPutCallGauge(result.pcRatio, 200)
+
+                    // 캐시 저장
+                    val prefs = context.getSharedPreferences("FGIPrefs", Context.MODE_PRIVATE)
+                    prefs.edit().apply {
+                        putFloat("fgi_score", result.fgData.score.toFloat())
+                        putString("fgi_rating", result.fgData.rating)
+                        putFloat("fgi_pc_ratio", result.pcRatio.toFloat())
+                        putBoolean("fgi_has_cache", true)
+                        apply()
+                    }
+                    WidgetBitmapCache.save(context, "fgi_fgchart", fgChart)
+                    WidgetBitmapCache.save(context, "fgi_fggauge", fgGauge)
+                    WidgetBitmapCache.save(context, "fgi_pcgauge", pcGauge)
 
                     Log.d("WITTQ_FGI_DEBUG", "Charts created successfully")
                     FGResult(result.fgData, result.pcRatio, fgChart, fgGauge, pcGauge, lastUpdate)
@@ -96,17 +108,30 @@ class FGIWidget : GlanceAppWidget() {
                     size
                 )
             } else {
-                Box(modifier = GlanceModifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Loading F&G Index...", style = TextStyle(color = ColorProvider(Color.White)))
-                        val reftime =
-                            SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
-                        Text(
-                            reftime, style = TextStyle(
-                                color = ColorProvider(Color.White.copy(alpha = 0.6f)),
-                                fontSize = 14.sp
-                            )
-                        )
+                // API 실패 → 역사 캐시에서 복원
+                val prefs = context.getSharedPreferences("FGIPrefs", Context.MODE_PRIVATE)
+                val hasCache = prefs.getBoolean("fgi_has_cache", false)
+                val cachedFgChart = WidgetBitmapCache.load(context, "fgi_fgchart")
+                val cachedFgGauge = WidgetBitmapCache.load(context, "fgi_fggauge")
+                val cachedPcGauge = WidgetBitmapCache.load(context, "fgi_pcgauge")
+
+                val lastUpdate = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
+                if (hasCache && cachedFgChart != null && cachedFgGauge != null && cachedPcGauge != null) {
+                    FGWidgetUI(
+                        FearGreedData(
+                            score = prefs.getFloat("fgi_score", 50f).toDouble(),
+                            rating = prefs.getString("fgi_rating", "-") ?: "-"
+                        ),
+                        prefs.getFloat("fgi_pc_ratio", 0.85f).toDouble(),
+                        cachedFgChart, cachedFgGauge, cachedPcGauge,
+                        lastUpdate, size
+                    )
+                } else {
+                    Box(modifier = GlanceModifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("Loading F&G Index...", style = TextStyle(color = ColorProvider(Color.White)))
+                            Text(lastUpdate, style = TextStyle(color = ColorProvider(Color.White.copy(alpha = 0.6f)), fontSize = 14.sp))
+                        }
                     }
                 }
             }

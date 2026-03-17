@@ -82,7 +82,10 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
                 )
 
                 val chart = drawStrategyChart(strategy.chartBars, 400, 400, strategy.signalColor)
-                
+
+                // 차트 비트맵을 파일로 저장 (캐시)
+                WidgetBitmapCache.save(context, "tq3161185_chart", chart)
+
                 // ✅ SharedPreferences에 전략 결과 저장
                 val prefs = context.getSharedPreferences("Tq3161185Prefs", Context.MODE_PRIVATE)
                 prefs.edit {
@@ -158,7 +161,9 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
                         chartBars          = emptyList()
                     )
                 
-                    WidgetContent(cachedResult, null, lastUpdate, size, isCached = true)
+                    // 파일에서 캐시된 차트 복원
+                    val cachedChart = WidgetBitmapCache.load(context, "tq3161185_chart")
+                    WidgetContent(cachedResult, cachedChart, lastUpdate, size, isCached = true)
                 } else {
                     // 캐시된 데이터도 없을 때
                     Box(
@@ -228,13 +233,8 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
         val blue        = Color(0xFF3B82F6)   // MA161
         val green       = Color(0xFF10B981)   // MA185
 
-        // 배경 미묘한 tint (신호 색상 반영)
-        val bgColor = when (res.todaySignal) {
-            "매수" -> Color(0xFF0D2318)  // 초록 tint
-            "매도" -> Color(0xFF2C1012)  // 빨강 tint
-            "보유" -> Color(0xFF0D1A2E)  // 파랑 tint
-            else   -> Color(0xFF1C1C1E)  // 기본
-        }
+        // 배경색: 다른 위젯과 통일 (#1C1C1E)
+        val bgColor = Color(0xFF1C1C1E)
 
         // 폰트 크기
         val tinySize  = (9 * factor).sp

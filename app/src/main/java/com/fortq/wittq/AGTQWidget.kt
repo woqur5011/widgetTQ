@@ -96,15 +96,22 @@ class AGTQWidget : GlanceAppWidget() {
 
                 prefs.edit {
                             if (res.agtscore == 2 && entryPrice == 0.0) {
-                                // 신규 진입 조건 달성 시: 현재가와 현재 시간 저장
                                 putFloat("agt_entry_price", res.tqqqPrice.toFloat())
                                 putLong("agt_entry_time", System.currentTimeMillis())
                             } else if (res.isbear) {
-                                // 200일선 이탈(스탑로스) 시: 진입 정보 초기화
                                 putFloat("agt_entry_price", 0f)
                                 putLong("agt_entry_time", 0L)
                             }
+                            // 캐시 저장
+                            putString("agtq_signal", res.agtsignal)
+                            putString("agtq_action", res.agtaction)
+                            putLong("agtq_color", res.agtColor)
+                            putFloat("agtq_current_price", currentPrice.toFloat())
+                            putFloat("agtq_tq200", res.tq200.toFloat())
+                            putBoolean("agtq_has_cache", true)
                         }
+                // 차트 파일 저장
+                WidgetBitmapCache.save(context, "agtq_chart", tmChart)
                 Triple(res, tmChart, currentPrice)
             } catch (e: Exception) { null }
             }
@@ -115,7 +122,6 @@ class AGTQWidget : GlanceAppWidget() {
                 SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
 
             resultData?.let { (res, tmChart, currentPrice) ->
-                // 여기서 tmChart와 currentPrice를 UI 함수에 전달합니다.
                 AGTQWidgetUI(
                     res = res,
                     refreshTime = lastUpdate,
@@ -125,17 +131,52 @@ class AGTQWidget : GlanceAppWidget() {
                     currentPrice = currentPrice
                 )
             } ?: run {
-                Box(modifier = GlanceModifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("updating...", style = TextStyle(color = ColorProvider(Color.White)))
-                        val reftime =
-                            SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
-                        Text(
-                            reftime, style = TextStyle(
-                                color = ColorProvider(Color.White.copy(alpha = 0.6f)),
-                                fontSize = 10.sp
-                            )
-                        )
+                // API 실패 → 역사 캐시에서 복원
+                val hasCache = prefs.getBoolean("agtq_has_cache", false)
+                if (hasCache) {
+                    val cachedSignal = prefs.getString("agtq_signal", "-") ?: "-"
+                    val cachedAction = prefs.getString("agtq_action", "-") ?: "-"
+                    val cachedColor = prefs.getLong("agtq_color", 0xFF8E8E93)
+                    val cachedPrice = prefs.getFloat("agtq_current_price", 0f).toDouble()
+                    val cachedTq200 = prefs.getFloat("agtq_tq200", 0f).toDouble()
+                    val cachedEntryPrice = ((prefs.getFloat("agt_entry_price", 0f) * 10).toInt() / 10.0)
+                    val cachedEntryTime = prefs.getLong("agt_entry_time", 0L)
+                    val cachedEntryDays = if (cachedEntryTime > 0L) ((System.currentTimeMillis() - cachedEntryTime) / (1000 * 60 * 60 * 24)).toInt() else 0
+                    val cachedRes = AGTResult(
+                        tq200 = cachedTq200,
+                        agtscore = 0,
+                        tqClose = emptyList(),
+                        tqqqPrice = cachedPrice,
+                        tqqqPrevClose = cachedPrice,
+                        stopLoss = 0.0,
+                        agtsignal = cachedSignal,
+                        agtaction = cachedAction,
+                        agtColor = cachedColor,
+                        isbull = false,
+                        isbear = false,
+                        tqqqRatio = 0,
+                        otherRatio = "-",
+                        avgPrice = SavedPrice,
+                        userProfit = 0.0,
+                        userPos = userPos
+                    )
+                    AGTQWidgetUI(
+                        res = cachedRes,
+                        refreshTime = lastUpdate,
+                        size = size,
+                        SavedPrice = SavedPrice,
+                        tmChart = WidgetBitmapCache.load(context, "agtq_chart"),
+                        entryPrice = cachedEntryPrice,
+                        entryDays = cachedEntryDays,
+                        currentPrice = cachedPrice
+                    )
+                } else {
+                    Box(modifier = GlanceModifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("updating...", style = TextStyle(color = ColorProvider(Color.White)))
+                            val reftime = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
+                            Text(reftime, style = TextStyle(color = ColorProvider(Color.White.copy(alpha = 0.6f)), fontSize = 10.sp))
+                        }
                     }
                 }
             }

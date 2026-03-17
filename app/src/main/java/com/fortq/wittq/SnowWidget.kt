@@ -152,6 +152,15 @@ class SnowWidget : GlanceAppWidget() {
                                 putLong("snow_stop_time", System.currentTimeMillis())
                             }
                         }
+                // 캐시 저장
+                prefs.edit {
+                    putString("snow_signal_text", res.snowsignal)
+                    putString("snow_action_text", res.snowaction)
+                    putLong("snow_signal_color", res.snowColor)
+                    putFloat("snow_tqqq_current", tqCurrent.toFloat())
+                    putBoolean("snow_has_cache", true)
+                }
+                WidgetBitmapCache.save(context, "snow_chart", tmChart)
                 Triple(res, tmChart, tqCurrent)
             } catch (e: Exception) { null }
             }
@@ -161,20 +170,38 @@ class SnowWidget : GlanceAppWidget() {
             val lastUpdate = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
 
             resultData?.let { (res, tmChart, tqCurrent) ->
-                // 여기서 tmChart와 currentPrice를 UI 함수에 전달합니다.
                 SnowWidgetUI(res, lastUpdate, size, SavedPrice, tmChart, entryPrice, entryDays, tqCurrent)
             } ?: run {
-                Box(modifier = GlanceModifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("updating...", style = TextStyle(color = ColorProvider(Color.White)))
-                        val reftime =
-                            SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
-                        Text(
-                            reftime, style = TextStyle(
-                                color = ColorProvider(Color.White.copy(alpha = 0.6f)),
-                                fontSize = 10.sp
-                            )
-                        )
+                // API 실패 → 역사 캐시에서 복원
+                val hasCache = prefs.getBoolean("snow_has_cache", false)
+                if (hasCache) {
+                    val cachedPrice = prefs.getFloat("snow_tqqq_current", 0f).toDouble()
+                    val cachedRes = SnowResult(
+                        tq220 = 0.0, snowscore = 0,
+                        tqPrice = emptyList(), qqPrice = emptyList(),
+                        tqCurrent = cachedPrice, qqCurrent = 0.0,
+                        qqq52WHigh = 0.0, diff220ma = 0.0, diffqqq = 0.0, tqRSI = 0.0, stLoss = 0.0,
+                        snowsignal = prefs.getString("snow_signal_text", "-") ?: "-",
+                        snowaction = prefs.getString("snow_action_text", "-") ?: "-",
+                        snowColor = prefs.getLong("snow_signal_color", 0xFF8E8E93),
+                        isgc = false, isbull = false, isbear = false, isDip = false,
+                        tqRatio = 0, buyRatio = 0, cooldownDays = 0,
+                        avgPrice = SavedPrice, usProfit = 0.0, usPos = userPos,
+                        dipPrice = 0.0, dip2Price = 0.0, dipAvgPrice = 0.0,
+                        entryPrice = entryPrice, slPrice = 0.0
+                    )
+                    SnowWidgetUI(
+                        cachedRes, lastUpdate, size, SavedPrice,
+                        WidgetBitmapCache.load(context, "snow_chart"),
+                        entryPrice, entryDays, cachedPrice
+                    )
+                } else {
+                    Box(modifier = GlanceModifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("updating...", style = TextStyle(color = ColorProvider(Color.White)))
+                            val reftime = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
+                            Text(reftime, style = TextStyle(color = ColorProvider(Color.White.copy(alpha = 0.6f)), fontSize = 10.sp))
+                        }
                     }
                 }
             }
