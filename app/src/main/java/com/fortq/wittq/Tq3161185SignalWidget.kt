@@ -420,7 +420,7 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
                         // 평단가 대비 수익
                         if (userAvgPrice > 0) {
                             val profitPct = (res.tqqqCurrentPrice - userAvgPrice) / userAvgPrice * 100
-                            val profitStr = "$${'$'}{"%.1f".format(userAvgPrice)} / ${if (profitPct >= 0) "+" else ""}${"%.1f".format(profitPct)}%"
+                            val profitStr = "\$${String.format("%.1f", userAvgPrice)} / ${if (profitPct >= 0) "+" else ""}${String.format("%.1f", profitPct)}%"
                             Text(
                                 profitStr,
                                 style = TextStyle(
