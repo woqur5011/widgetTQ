@@ -332,7 +332,7 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
                     Spacer(modifier = GlanceModifier.width((15 * factor).dp))
 
                     // ── 우측: 신호 / 상태 정보 ─────────────────────────────
-                    Column(modifier = GlanceModifier.width((130 * factor).dp).fillMaxHeight()) {
+                    Column(modifier = GlanceModifier.width((130 * factor).dp).fillMaxHeight(), verticalAlignment = Alignment.Bottom) {
                         // 타이틀 — 신호 색상으로
                         Text(
                             "QQQ 3/161/185",
