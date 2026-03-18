@@ -81,7 +81,7 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
                     tqqqPrevClose    = tData.prevClose
                 )
 
-                val chart = drawStrategyChart(strategy.chartBars, 400, 400, strategy.signalColor)
+                val chart = drawStrategyChart(strategy.chartBars, 400, 180, strategy.signalColor)
 
                 // 차트 비트맵을 파일로 저장 (캐시)
                 WidgetBitmapCache.save(context, "tq3161185_chart", chart)
