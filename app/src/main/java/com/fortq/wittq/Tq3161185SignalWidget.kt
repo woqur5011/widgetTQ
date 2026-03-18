@@ -401,8 +401,6 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
                             }
                         }
 
-                        Spacer(modifier = GlanceModifier.defaultWeight())
-
                         // TQQQ 현재가 + 등락률
                         Text(
                             "TQQQ $${"%.2f".format(res.tqqqCurrentPrice)}",
