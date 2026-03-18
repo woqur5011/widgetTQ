@@ -114,11 +114,15 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
             }
         }
 
+        // 평단가 (Snow/AGTQ와 동일한 StockPrefs 키 사용)
+        val userAvgPrice = ((context.getSharedPreferences("StockPrefs", Context.MODE_PRIVATE)
+            .getFloat("user_avg_price", 0f) * 10).toInt() / 10.0)
+
         provideContent {
             val size = LocalSize.current
             if (resultPair != null) {
                 val (strategy, chart) = resultPair
-                WidgetContent(strategy, chart, lastUpdate, size)
+                WidgetContent(strategy, chart, lastUpdate, size, userAvgPrice = userAvgPrice)
             } else {
                 // ✅ 실패 시 캐시된 데이터 표시
                 val prefs = context.getSharedPreferences("Tq3161185Prefs", Context.MODE_PRIVATE)
@@ -163,7 +167,7 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
                 
                     // 파일에서 캐시된 차트 복원
                     val cachedChart = WidgetBitmapCache.load(context, "tq3161185_chart")
-                    WidgetContent(cachedResult, cachedChart, lastUpdate, size, isCached = true)
+                    WidgetContent(cachedResult, cachedChart, lastUpdate, size, isCached = true, userAvgPrice = userAvgPrice)
                 } else {
                     // 캐시된 데이터도 없을 때
                     Box(
@@ -214,7 +218,8 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
         chart: Bitmap?,
         updateTime: String,
         size: DpSize,
-        isCached: Boolean = false
+        isCached: Boolean = false,
+        userAvgPrice: Double = 0.0
     ) {
         val factor    = (size.width.value / 410f).coerceIn(0.6f, 1.0f)
         val hpadding  = (30 * factor).dp
@@ -256,16 +261,13 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
             modifier = GlanceModifier
                 .fillMaxSize()
                 .background(bgColor)
-                .cornerRadius(42.dp)
+                .cornerRadius(34.dp)
                 .padding(horizontal = hpadding, vertical = vpadding)
         ) {
-            Column(modifier = GlanceModifier.fillMaxSize()) {
-                Row(
-                    modifier = GlanceModifier
-                        .fillMaxWidth()
-                        .defaultWeight(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+            Row(
+                modifier = GlanceModifier.fillMaxSize().padding(4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
 
                     // ── 좌측: 차트 (최대 확장) ──────────────────────────────
                     Column(
@@ -415,6 +417,20 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
                             style = TextStyle(color = ColorProvider(changeColor), fontSize = subSize)
                         )
 
+                        // 평단가 대비 수익
+                        if (userAvgPrice > 0) {
+                            val profitPct = (res.tqqqCurrentPrice - userAvgPrice) / userAvgPrice * 100
+                            val profitStr = "$${'$'}{"%.1f".format(userAvgPrice)} / ${if (profitPct >= 0) "+" else ""}${"%.1f".format(profitPct)}%"
+                            Text(
+                                profitStr,
+                                style = TextStyle(
+                                    color = ColorProvider(if (profitPct >= 0) upColor else downColor),
+                                    fontSize = (11 * factor).sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            )
+                        }
+
                         Spacer(modifier = GlanceModifier.defaultWeight())
 
                         // 전략 수익률 + 새로고침
@@ -480,7 +496,6 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
                         }
                     }
                 }
-            }
         }
     }
 
@@ -493,14 +508,8 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
         val bitmap = createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
 
-        // ��경: bgColor와 맞게 신호 tint 배경
-        val bgHex = when (signalColorLong) {
-            0xFF30D158L -> "#0D2318"  // 매수 초록 tint
-            0xFFFF453AL -> "#2C1012"  // 매도 빨강 tint
-            0xFF0A84FFL -> "#0D1A2E"  // 보유 파랑 tint
-            else        -> "#1C1C1E"  // 관망 기본
-        }
-        canvas.drawColor(android.graphics.Color.parseColor(bgHex))
+        // 차트 배경: 위젯 배경과 동일 (#1C1C1E)
+        canvas.drawColor(android.graphics.Color.parseColor("#1C1C1E"))
 
         // 종가선 색: signalColor 기반
         val closePriceHex = when (signalColorLong) {
