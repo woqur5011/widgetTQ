@@ -362,7 +362,7 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
                             res.todayReason,
                             style = TextStyle(
                                 color = ColorProvider(gray),
-                                fontSize = (9 * factor).sp
+                                fontSize = (11 * factor).sp
                             )
                         )
 
@@ -417,19 +417,26 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
                             style = TextStyle(color = ColorProvider(changeColor), fontSize = subSize)
                         )
 
-                        // 평단가 대비 수익
-                        if (userAvgPrice > 0) {
-                            val profitPct = (res.tqqqCurrentPrice - userAvgPrice) / userAvgPrice * 100
-                            val profitStr = "\$${String.format("%.1f", userAvgPrice)} / ${if (profitPct >= 0) "+" else ""}${String.format("%.1f", profitPct)}%"
-                            Text(
-                                profitStr,
-                                style = TextStyle(
-                                    color = ColorProvider(if (profitPct >= 0) upColor else downColor),
-                                    fontSize = (11 * factor).sp,
-                                    fontWeight = FontWeight.Bold
-                                )
+                        // 평단가 대비 수익 — 항상 표시
+                        val profitPct = if (userAvgPrice > 0) (res.tqqqCurrentPrice - userAvgPrice) / userAvgPrice * 100 else 0.0
+                        val profitStr = if (userAvgPrice > 0)
+                            "\$${String.format("%.1f", userAvgPrice)} / ${if (profitPct >= 0) "+" else ""}${String.format("%.1f", profitPct)}%"
+                        else
+                            "평단가 미설정"
+                        Text(
+                            profitStr,
+                            style = TextStyle(
+                                color = ColorProvider(
+                                    when {
+                                        userAvgPrice <= 0 -> gray
+                                        profitPct >= 0    -> upColor
+                                        else              -> downColor
+                                    }
+                                ),
+                                fontSize = (11 * factor).sp,
+                                fontWeight = FontWeight.Bold
                             )
-                        }
+                        )
 
                         Spacer(modifier = GlanceModifier.defaultWeight())
 
@@ -519,9 +526,9 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
             else        -> "#8E8E93"  // 관망 회색
         }
 
-        val pad    = 6f
-        val chartW = width  - pad * 2
-        val chartH = height - pad * 2
+        val pad    = 0f
+        val chartW = width.toFloat()
+        val chartH = height.toFloat()
 
         // 값 범위 계산
         val allValues = bars.flatMap { bar ->
