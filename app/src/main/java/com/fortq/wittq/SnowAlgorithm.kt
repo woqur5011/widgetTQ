@@ -103,7 +103,11 @@ object SnowStrategy {
             dipAvgPrice > 0 && dipRate >= 0.15 -> 50
             diffqqq <= -40 -> 0 /* STOP BUY */
             diffqqq <= -22 -> 50
-            diffqqq <= -10 -> if (tqRSI <= 35) 30 else 20
+            diffqqq <= -10 -> when {
+                tqRSI <= 25 -> 50
+                tqRSI <= 35 -> 40
+                else -> 30
+            }
             isgc && !isCooldown -> 100
             else -> 0
         }
