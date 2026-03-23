@@ -5,7 +5,7 @@ import kotlin.math.sqrt
 import android.content.Context
 import android.content.SharedPreferences
 
-data class SnowResult(
+data class Tq5220Result(
     val tq220: Double,
     val snowscore: Int,
     val tqPrice: List<Double>,
@@ -37,7 +37,7 @@ data class SnowResult(
     val slPrice : Double
 )
 
-object SnowStrategy {
+object Tq5220Strategy {
     fun calc(
         tHistory: List<Double>,
         qHistory: List<Double>,
@@ -53,7 +53,7 @@ object SnowStrategy {
         dip2Price: Double,
         dipAvgPrice: Double,
         signalPrice: Double
-    ): SnowResult {
+    ): Tq5220Result {
         val bullColor = 0xFF30D158
         val bearColor = 0xFFFF453A
         val grayColor = 0xFF8E8E93
@@ -156,7 +156,7 @@ object SnowStrategy {
 
         val usProfit = if (avgPrice > 0) ((tqCurrent - avgPrice) / avgPrice) * 100 else 0.0
 
-        return SnowResult(
+        return Tq5220Result(
             tq220 = tq220,
             snowscore = snowscore,
             tqPrice = tHistory,

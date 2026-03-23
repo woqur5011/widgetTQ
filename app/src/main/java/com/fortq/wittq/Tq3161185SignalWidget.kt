@@ -69,9 +69,9 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
 
         val resultPair = withContext(Dispatchers.IO) {
             try {
-                val qData = StockApiEngine.fetchMarketData("QQQ")
+                val qData = MarketDataEngine.fetchMarketData("QQQ")
                     ?: return@withContext null
-                val tData = StockApiEngine.fetchMarketData("TQQQ")
+                val tData = MarketDataEngine.fetchMarketData("TQQQ")
                     ?: return@withContext null
 
                 val strategy = Tq3161185Algorithm.calculate(
@@ -114,8 +114,8 @@ class Tq3161185SignalWidget : GlanceAppWidget() {
             }
         }
 
-        // 평단가 (Snow/AGTQ와 동일한 StockPrefs 키 사용)
-        val userAvgPrice = ((context.getSharedPreferences("StockPrefs", Context.MODE_PRIVATE)
+        // 평단가 (5/220 TQ, 200MA TQ와 동일한 AppPrefs 키 사용)
+        val userAvgPrice = ((context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
             .getFloat("user_avg_price", 0f) * 10).toInt() / 10.0)
 
         provideContent {

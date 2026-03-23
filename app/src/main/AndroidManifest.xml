@@ -23,30 +23,30 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <receiver android:name=".StockWidgetReceiver"
-            android:exported="true" android:label="ALT TQ200">
+        <receiver android:name=".Tq3161WidgetReceiver"
+            android:exported="true" android:label="3/161 TQ">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/stock_widget_info" />
+                android:resource="@xml/tq3161_widget_info" />
         </receiver>
-        <receiver android:name=".AGTQWidgetReceiver" android:exported="true" android:label="AGItQ">
+        <receiver android:name=".Ma200WidgetReceiver" android:exported="true" android:label="200MA TQ">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/agtq_widget_info" />
+                android:resource="@xml/ma200_widget_info" />
         </receiver>
-        <receiver android:name=".SnowWidgetReceiver" android:exported="true" android:label="Snow">
+        <receiver android:name=".Tq5220WidgetReceiver" android:exported="true" android:label="5/220 TQ">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/snow_widget_info" />
+                android:resource="@xml/tq5220_widget_info" />
         </receiver>
         <receiver android:name=".FGIWidgetReceiver" android:exported="true" android:label="FGI">
             <intent-filter>
@@ -59,7 +59,7 @@
         <receiver
             android:name=".Tq3161185SignalWidgetReceiver"
             android:exported="true"
-            android:label="TQ 3-161-185 Signal">
+            android:label="3/161/185 TQ">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>

@@ -3,9 +3,9 @@ package com.fortq.wittq
 import android.content.Context
 import android.content.SharedPreferences
 
-class TqqqPreferenceManager(context: Context) {
+class Tq3161PrefManager(context: Context) {
     private val prefs: SharedPreferences =
-        context.getSharedPreferences("TqqqAlgoPrefs", Context.MODE_PRIVATE)
+        context.getSharedPreferences("Tq3161AlgoPrefs", Context.MODE_PRIVATE)
 
     companion object {
         const val KEY_LAST_ENTRY_PRICE = "last_entry_price"

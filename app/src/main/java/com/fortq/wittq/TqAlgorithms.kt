@@ -6,7 +6,7 @@ import android.content.Context
 import android.content.SharedPreferences
 
 
-data class AlgoResult(
+data class Tq3161Result(
     val score: Int,
     val marketStatus: String,
     val actionTitle: String,
@@ -32,8 +32,8 @@ data class LinRegResult(
     val endY: Double
 )
 
-// AGTQ Data
-data class AGTResult(
+// 200MA TQ Data
+data class Ma200Result(
     val tq200: Double,
     val agtscore: Int,
     val tqClose: List<Double>,
@@ -52,8 +52,8 @@ data class AGTResult(
     val userPos: String
 )
 
-object AGTQStrategy {
-    fun calc(tqPrice: List<Double>, entryPrice: Double = 0.0, entryDays: Int = 0, avgPrice: Double = 0.0, userPos: String): AGTResult {
+object Ma200Strategy {
+    fun calc(tqPrice: List<Double>, entryPrice: Double = 0.0, entryDays: Int = 0, avgPrice: Double = 0.0, userPos: String): Ma200Result {
         val bullColor = 0xFF30D158
         val bearColor = 0xFFFF453A
         val grayColor = 0xFF8E8E93
@@ -122,7 +122,7 @@ object AGTQStrategy {
 
         val userProfit = if (avgPrice > 0) ((tqCurrent - avgPrice) / avgPrice) * 100 else 0.0
 
-        return AGTResult(
+        return Ma200Result(
             tq200 = tq200,
             agtscore = agtscore,
             tqClose = tqPrice,
@@ -143,7 +143,7 @@ object AGTQStrategy {
 }
 
 
-object TqqqAlgorithm {
+object Tq3161Algorithm {
     fun calculate(
         qPrices: List<Double>,
         tPrices: List<Double>,
@@ -152,7 +152,7 @@ object TqqqAlgorithm {
         avgPrice: Double = 50.0,
         lastEntryPrice: Double = 0.0,
         hadForceExit: Boolean = false
-    ): AlgoResult {
+    ): Tq3161Result {
         val tqqqCurrent = tPrices.lastOrNull() ?: 0.0
         val qqqCurrent = qPrices.lastOrNull() ?: 0.0
         val spyCurrent = spyPrices.lastOrNull() ?: 0.0
@@ -263,7 +263,7 @@ object TqqqAlgorithm {
         }
         val profitRate = if (avgPrice > 0) ((tqqqCurrent - avgPrice) / avgPrice) * 100 else 0.0
 
-        return AlgoResult(
+        return Tq3161Result(
             score = if (targetRatio >= 100) 2 else if (targetRatio > 0) 1 else 0,
             marketStatus = "${targetRatio}%",
             actionTitle = actionTitle,

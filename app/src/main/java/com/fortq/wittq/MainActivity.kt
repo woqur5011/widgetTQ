@@ -45,7 +45,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun PriceInputScreen() {
     val context = LocalContext.current
-    val prefs = remember { context.getSharedPreferences("StockPrefs", Context.MODE_PRIVATE) }
+    val prefs = remember { context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE) }
 
     var avgPrice by remember { mutableStateOf(prefs.getFloat("user_avg_price", 50.0f).toString()) }
     var selectedPos by remember { mutableStateOf(prefs.getString("user_position", "TQQQ") ?: "TQQQ") }
@@ -134,8 +134,10 @@ fun PriceInputScreen() {
                         delay(100)
 
                         withContext(Dispatchers.IO) {
-                            StockWidget().updateAll(context)
-                            AGTQWidget().updateAll(context)
+                            Tq3161Widget().updateAll(context)
+                            Ma200Widget().updateAll(context)
+                            Tq5220Widget().updateAll(context)
+                            Tq3161185SignalWidget().updateAll(context)
                             FGIWidget().updateAll(context)
                             Log.d("WITTQ_DEBUG", "Widget update requested")
                         }
